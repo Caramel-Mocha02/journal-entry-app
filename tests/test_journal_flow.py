@@ -10,6 +10,7 @@ from smart_journal_ai.engine import (
     export_approved_journal_csv,
     build_review_summary,
 )
+from smart_journal_ai.ocr import extract_document_fields
 
 
 def test_rule_based_office_supplies():
@@ -169,3 +170,12 @@ def test_build_review_summary_detects_balancing_and_evidence():
     assert summary["risk_level"] in {"低", "中"}
     assert "証憑" in summary["evidence_summary"]
     assert summary["history_used"] is True
+
+
+def test_extract_document_fields_handles_missing_file_without_crashing():
+    result = extract_document_fields("/tmp/does-not-exist.pdf")
+
+    assert result["document_type"] in {"請求書", "領収書", "不明"}
+    assert result["vendor_name"] == "不明"
+    assert result["description"] == "未記載"
+    assert result["source_text"] == ""
